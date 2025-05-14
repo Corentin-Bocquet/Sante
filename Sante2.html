@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programme Quotidien</title>
+    <style>
+        :root {
+            /* Thème sombre (par défaut) */
+            --bg-primary: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --bg-secondary: rgba(255, 255, 255, 0.05);
+            --bg-card: rgba(255, 255, 255, 0.1);
+            --bg-card-hover: rgba(0, 255, 255, 0.7);
+            --bg-popup: rgba(255, 255, 255, 0.1);
+            --bg-input: rgba(255, 255, 255, 0.08);
+            --bg-drop-zone: rgba(255, 255, 255, 0.05);
+            --bg-outfit-item: rgba(255, 255, 255, 0.15);
+            --text-primary: #e0e0e0;
+            --text-secondary: #e0e0e0;
+            --text-accent: #00f7ff;
+            --shadow-primary: rgba(0, 255, 255, 0.2);
+            --shadow-secondary: rgba(0, 255, 255, 0.3);
+            --shadow-hover: rgba(0, 255, 255, 0.7);
+            --border-primary: rgba(0, 255, 255, 0.5);
+            --border-accent: #00f7ff;
+        }
+
+        .theme-light {
+            /* Thème clair */
+            --bg-primary: linear-gradient(135deg, #f5f7fa 0%, #e4e9f0 100%);
+            --bg-secondary: rgba(0, 0, 0, 0.05);
+            --bg-card: rgba(255, 255, 255, 0.8);
+            --bg-card-hover: rgba(0, 200, 200, 0.5);
+            --bg-popup: rgba(255, 255, 255, 0.9);
+            --bg-input: rgba(0, 0, 0, 0.05);
+            --bg-drop-zone: rgba(0, 0, 0, 0.05);
+            --bg-outfit-item: rgba(0, 0, 0, 0.1);
+            --text-primary: #333333;
+            --text-secondary: #555555;
+            --text-accent: #00a1a1;
+            --shadow-primary: rgba(0, 200, 200, 0.2);
+            --shadow-secondary: rgba(0, 200, 200, 0.3);
+            --shadow-hover: rgba(0, 200, 200, 0.5);
+            --border-primary: rgba(0, 200, 200, 0.5);
+            --border-accent: #00a1a1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes popupOpen {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+            color: var(--text-accent);
+            text-shadow: 0 0 10px var(--shadow-primary);
+            animation: fadeIn 1s ease-out;
+        }
+
+        .section {
+            margin: 40px 0;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            box-shadow: 0 0 20px var(--shadow-primary);
+            animation: fadeIn 1s ease-out;
+            backdrop-filter: blur(5px);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 15px var(--shadow-secondary);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            position: relative;
+            animation: fadeIn 1s ease-out;
+            animation-delay: calc(var(--index) * 0.1s);
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 0 30px var(--shadow-hover);
+        }
+
+        .card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            filter: brightness(0.9);
+            transition: filter 0.3s;
+        }
+
+        .card:hover img {
+            filter: brightness(1.1);
+        }
+
+        .card h3 {
+            margin: 10px;
+            font-size: 1.2em;
+            color: var(--text-primary);
+            text-shadow: 0 0 5px var(--shadow-primary);
+        }
+
+        .card.completed {
+            background: rgba(255, 255, 255, 0.05);
+            opacity: 0.7;
+            box-shadow: 0 0 10px var(--shadow-primary);
+        }
+
+        .add-button, .theme-toggle {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 30px;
+            background: linear-gradient(45deg, var(--text-accent), #ff00ff);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1em;
+            box-shadow: 0 0 15px var(--shadow-primary);
+            transition: background 0.3s, transform 0.3s;
+            animation: pulse 2s infinite;
+        }
+
+        .add-button:hover, .theme-toggle:hover {
+            background: linear-gradient(45deg, #ff00ff, var(--text-accent));
+            transform: scale(1.1);
+            box-shadow: 0 0 25px var(--shadow-hover);
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background: var(--bg-popup);
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 0 30px var(--shadow-primary);
+            animation: popupOpen 0.3s ease-out;
+            backdrop-filter: blur(10px);
+        }
+
+        .popup-content input, .popup-content select, .popup-content textarea {
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px;
+            border: 1px solid var(--border-primary);
+            border-radius: 10px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 1em;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+
+        .popup-content input:focus, .popup-content select:focus, .popup-content textarea:focus {
+            border: 1px solid var(--border-accent);
+            box-shadow: 0 0 10px var(--shadow-hover);
+            outline: none;
+        }
+
+        .popup-content button {
+            padding: 12px 30px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+        }
+
+        .save-button {
+            background: linear-gradient(45deg, #28a745, var(--text-accent));
+            color: #fff;
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.5);
+        }
+
+        .save-button:hover {
+            background: linear-gradient(45deg, var(--text-accent), #28a745);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(40, 167, 69, 0.8);
+        }
+
+        .cancel-button {
+            background: linear-gradient(45deg, #dc3545, #ff00ff);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(220, 53, 69, 0.5);
+        }
+
+        .cancel-button:hover {
+            background: linear-gradient(45deg, #ff00ff, #dc3545);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(220, 53, 69, 0.8);
+        }
+
+        .link-section {
+            margin: 20px 0;
+        }
+
+        .link-section a {
+            display: block;
+            padding: 20px;
+            background: linear-gradient(45deg, var(--text-accent), #ff00ff);
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1.5em;
+            border-radius: 15px;
+            box-shadow: 0 0 20px var(--shadow-primary);
+            transition: background 0.5s, transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .link-section a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .link-section a:hover::before {
+            left: 100%;
+        }
+
+        .link-section a:hover {
+            background: linear-gradient(45deg, #ff00ff, var(--text-accent));
+            transform: scale(1.02);
+            box-shadow: 0 0 30px var(--shadow-hover);
+        }
+
+        .meal-section, .outfit-section, .workout-section {
+            text-align: center;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 0 20px var(--shadow-primary);
+            animation: fadeIn 1s ease-out;
+            backdrop-filter: blur(5px);
+        }
+
+        .frequency-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .frequency-container input[type="number"] {
+            width: 80px;
+        }
+
+        .frequency-container label {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .outfit-section {
+            position: relative;
+        }
+
+        .outfit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding: 10px;
+        }
+
+        .outfit-item {
+            background: var(--bg-outfit-item);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 0 10px var(--shadow-secondary);
+        }
+
+        .outfit-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--shadow-hover);
+        }
+
+        .outfit-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .outfit-item p {
+            margin: 5px 0;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .sub-popup {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 0 15px var(--shadow-primary);
+            border: 1px solid var(--border-primary);
+        }
+
+        .sub-popup.generate {
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1));
+        }
+
+        .sub-popup.items {
+            background: linear-gradient(45deg, rgba(40, 167, 69, 0.1), rgba(0, 255, 255, 0.1));
+        }
+
+        .sub-popup.outfit {
+            background: linear-gradient(45deg, rgba(255, 152, 0, 0.1), rgba(255, 0, 255, 0.1));
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border-primary);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            min-height: 120px;
+            background: var(--bg-drop-zone);
+            transition: border 0.3s, background 0.3s;
+        }
+
+        .drop-zone.dragover {
+            border: 2px dashed var(--border-accent);
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .item-card {
+            background: var(--bg-outfit-item);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: move;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 0 10px var(--shadow-secondary);
+        }
+
+        .item-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--shadow-hover);
+        }
+
+        .item-card img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .item-card p {
+            margin: 5px 0;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+    </style>
+</head>
+<body class="theme-dark">
+    <button class="theme-toggle" onclick="toggleTheme()">Basculer Thème</button>
+    <h1>Programme Quotidien</h1>
+
+    <!-- Section Liste des Tâches Quotidiennes -->
+    <div class="section" id="tasks-section">
+        <h2>Liste des Tâches Quotidiennes</h2>
+        <div class="card-grid" id="tasks-grid"></div>
+        <button class="add-button" onclick="openAddPopup('tasks')">Ajouter une Tâche</button>
+    </div>
+
+    <!-- Section Défis Quotidiens / Habitudes -->
+    <div class="section" id="challenges-section">
+        <h2>Défis Quotidiens / Habitudes</h2>
+        <div class="card-grid" id="challenges-grid"></div>
+        <button class="add-button" onclick="openAddPopup('challenges')">Ajouter un Défi</button>
+    </div>
+
+    <!-- Section Liste des Automatisations Possibles -->
+    <div class="section" id="automations-section">
+        <h2>Liste des Automatisations Possibles</h2>
+        <div class="card-grid" id="automations-grid"></div>
+        <button class="add-button" onclick="openAddPopup('automations')">Ajouter une Automatisation</button>
+    </div>
+
+    <!-- Section Liens -->
+    <div class="link-section">
+        <a href="https://example.com/food-list">Lien vers la Liste des Aliments Super Bons</a>
+    </div>
+    <div class="link-section">
+        <a href="https://www.amazon.fr">Lien vers Amazon</a>
+    </div>
+
+    <!-- Section Repas du Jour -->
+    <div class="section meal-section" id="meal-section">
+        <h2>Repas du Jour</h2>
+        <div class="card-grid" id="meals-grid"></div>
+        <button class="add-button" onclick="openAddPopup('meals')">Ajouter un Repas</button>
+    </div>
+
+    <!-- Section Tenue du Jour -->
+    <div class="section outfit-section" id="outfit-section">
+        <h2>Tenue du Jour</h2>
+        <div id="outfit-content"></div>
+        <button class="add-button" onclick="openOutfitPopup()">Gérer les Tenues</button>
+    </div>
+
+    <!-- Section Séance de Sport -->
+    <div class="section workout-section" id="workout-section">
+        <h2>Séance de Sport du Jour</h2>
+        <div class="card-grid" id="workouts-grid"></div>
+        <button class="add-button" onclick="openAddPopup('workouts')">Ajouter une Séance de Sport</button>
+    </div>
+
+    <!-- Popup pour ajouter/modifier une carte -->
+    <div class="popup" id="add-popup">
+        <div class="popup-content">
+            <h2>Ajouter/Modifier une Carte</h2>
+            <input type="text" id="card-title" placeholder="Titre">
+            <textarea id="card-description" placeholder="Description"></textarea>
+            <input type="file" id="card-image" accept="image/*">
+            <div id="image-preview"></div>
+            <div class="frequency-container">
+                <label><input type="radio" name="frequency-mode" value="fixed" checked> Fixe</label>
+                <label><input type="radio" name="frequency-mode" value="random"> Aléatoire</label>
+                <select id="frequency-unit">
+                    <option value="day">Jour</option>
+                    <option value="week">Semaine</option>
+                    <option value="month">Mois</option>
+                    <option value="year">Année</option>
+                </select>
+                <input type="number" id="frequency-value" min="1" placeholder="Valeur">
+                <input type="number" id="frequency-value-max" min="1" placeholder="Valeur max" style="display: none;">
+            </div>
+            <input type="date" id="card-start-date" placeholder="Date de début">
+            <input type="time" id="card-start-time" placeholder="Heure de début">
+            <input type="time" id="card-end-time" placeholder="Heure de fin">
+            <button class="save-button" onclick="saveCard()">Sauvegarder</button>
+            <button class="cancel-button" onclick="closeAddPopup()">Annuler</button>
+            <button class="cancel-button" id="delete-button" style="display: none;" onclick="deleteCard()">Supprimer</button>
+        </div>
+    </div>
+
+    <!-- Popup pour afficher les détails de la carte -->
+    <div class="popup" id="view-popup">
+        <div class="popup-content">
+            <h2 id="view-title"></h2>
+            <img id="view-image" style="width: 100%; border-radius: 10px;">
+            <p id="view-description"></p>
+            <p id="view-start-date"></p>
+            <button class="save-button" onclick="toggleComplete()">Marquer comme terminé</button>
+            <button class="cancel-button" onclick="closeViewPopup()">Fermer</button>
+        </div>
+    </div>
+
+    <!-- Popup pour gérer les tenues -->
+    <div class="popup" id="outfit-popup">
+        <div class="popup-content" id="outfit-popup-content">
+            <h2>Planificateur de Tenues</h2>
+            <div class="sub-popup generate">
+                <h3>Générer une Tenue</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+                    <select id="outfit-category" onchange="updateOutfitCategory()">
+                        <option value="">Toutes les catégories</option>
+                    </select>
+                    <input type="text" id="new-category" placeholder="Nouvelle catégorie">
+                </div>
+                <button class="save-button" onclick="generateOutfit()" id="generate-button">Générer</button>
+                <div id="generated-outfit" style="margin-top: 20px;"></div>
+            </div>
+            <div class="sub-popup items">
+                <h3>Ajouter un Item</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <input type="text" id="item-name" placeholder="Nom de l'item">
+                    <select id="item-category">
+                        <option value="haut">Haut</option>
+                        <option value="bas">Bas</option>
+                        <option value="chaussures">Chaussures</option>
+                        <option value="montre">Montre</option>
+                        <option value="collier">Collier</option>
+                        <option value="chapeau">Chapeau</option>
+                        <option value="sous-vêtements">Sous-vêtements</option>
+                        <option value="veste">Veste</option>
+                        <option value="manteau">Manteau</option>
+                    </select>
+                    <select id="item-season">
+                        <option value="all">Toutes</option>
+                        <option value="spring">Printemps</option>
+                        <option value="summer">Été</option>
+                        <option value="autumn">Automne</option>
+                        <option value="winter">Hiver</option>
+                    </select>
+                    <div class="drop-zone" id="item-image-drop">
+                        <p>Glissez une image ici ou</p>
+                        <button class="save-button" onclick="document.getElementById('item-image').click()">Choisir une image</button>
+                        <input type="file" id="item-image" accept="image/*" style="display: none;">
+                        <div id="item-image-preview"></div>
+                    </div>
+                </div>
+                <button class="save-button" onclick="handleItemSubmit()" id="item-submit">Ajouter Item</button>
+                <h3>Items Disponibles</h3>
+                <div class="item-grid" id="items-grid"></div>
+            </div>
+            <div class="sub-popup outfit">
+                <h3>Créer un Outfit</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <input type="text" id="outfit-name" placeholder="Nom de l'outfit">
+                    <select id="outfit-form-category">
+                        <option value="classique">Classique</option>
+                        <option value="old money">Old Money</option>
+                        <option value="casual">Casual</option>
+                        <option value="streetwear">Streetwear</option>
+                    </select>
+                    <select id="outfit-season">
+                        <option value="all">Toutes</option>
+                        <option value="spring">Printemps</option>
+                        <option value="summer">Été</option>
+                        <option value="autumn">Automne</option>
+                        <option value="winter">Hiver</option>
+                    </select>
+                </div>
+                <div class="drop-zone" id="outfit-drop">
+                    <p>Glissez les items ici pour créer l'outfit</p>
+                    <div class="outfit-grid" id="outfit-items-grid"></div>
+                </div>
+                <button class="save-button" onclick="handleOutfitSubmit()" id="outfit-submit">Créer Outfit</button>
+                <button class="save-button" onclick="openOutfitsPopup()">Voir les Outfits</button>
+            </div>
+            <button class="cancel-button" onclick="closeOutfitPopup()">Fermer</button>
+        </div>
+    </div>
+
+    <!-- Sous-popup pour afficher les outfits -->
+    <div class="popup" id="outfits-sub-popup">
+        <div class="popup-content">
+            <h2>Outfits Enregistrés</h2>
+            <div id="outfits-grid" class="outfit-grid"></div>
+            <button class="cancel-button" onclick="closeOutfitsPopup()">Fermer</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentSection = '';
+            let currentCardId = null;
+            let cards = {
+                tasks: [],
+                challenges: [],
+                automations: [],
+                meals: [],
+                workouts: []
+            };
+            let globalFrequencyMode = 'fixed';
+            let outfitData = {
+                items: [],
+                outfits: [],
+                generatedOutfit: null
+            };
+            let currentSeason = getSeason(new Date());
+            let isGenerating = false;
+            let editItemIndex = null;
+            let editOutfitIndex = null;
+            let itemForm = { name: '', category: '', season: 'all', image: '' };
+            let outfitForm = { name: '', category: 'classique', season: 'all', items: [] };
+            let selectedCategory = '';
+            let currentTheme = 'dark';
+
+            // Saison et styles
+            function getSeason(date) {
+                const month = date.getMonth();
+                const day = date.getDate();
+                if ((month === 2 && day >= 21) || (month > 2 && month < 5)) return 'spring';
+                if ((month === 5 && day >= 21) || (month > 5 && month < 8)) return 'summer';
+                if ((month === 8 && day >= 23) || (month > 8 && month < 11)) return 'autumn';
+                return 'winter';
+            }
+
+            const seasonStyles = {
+                spring: { 
+                    background: 'linear-gradient(135deg, #4CAF50, #00f7ff)', 
+                    text: currentTheme === 'light' ? '#333333' : '#e0e0e0', 
+                    icon: '🌱', 
+                    iconColor: '#4CAF50' 
+                },
+                summer: { 
+                    background: 'linear-gradient(135deg, #FFCA28, #ff00ff)', 
+                    text: currentTheme === 'light' ? '#333333' : '#e0e0e0', 
+                    icon: '☀️', 
+                    iconColor: '#FFCA28' 
+                },
+                autumn: { 
+                    background: 'linear-gradient(135deg, #FF9800, #00f7ff)', 
+                    text: currentTheme === 'light' ? '#333333' : '#e0e0e0', 
+                    icon: '🍂', 
+                    iconColor: '#FF9800' 
+                },
+                winter: { 
+                    background: 'linear-gradient(135deg, #607D8B, #ff00ff)', 
+                    text: currentTheme === 'light' ? '#333333' : '#e0e0e0', 
+                    icon: '❄️', 
+                    iconColor: '#607D8B' 
+                }
+            };
+
+            // Compress image
+            function compressImage(file, callback) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const maxWidth = 300;
+                        const scale = maxWidth / img.width;
+                        canvas.width = maxWidth;
+                        canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        callback(compressedDataUrl);
+                    };
+                    img.onerror = function() {
+                        console.error('Error loading image for compression');
+                        callback(null);
+                    };
+                };
+                reader.onerror = function() {
+                    console.error('Error reading file for compression');
+                    callback(null);
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Validate and clean card data
+            function cleanCardData(card) {
+                return {
+                    id: card.id || Date.now().toString(),
+                    title: card.title || '',
+                    description: card.description || '',
+                    image: card.image || '',
+                    frequency: {
+                        mode: card.frequency?.mode || globalFrequencyMode,
+                        unit: card.frequency?.unit || 'day',
+                        value: card.frequency?.value || 1,
+                        valueMax: card.frequency?.valueMax || null
+                    },
+                    startDate: card.startDate || '',
+                    startTime: card.startTime || '',
+                    endTime: card.endTime || '',
+                    completed: !!card.completed,
+                    lastCompleted: card.lastCompleted || null
+                };
+            }
+
+            // Load cards and outfit data
+            function loadData() {
+                try {
+                    const savedCards = localStorage.getItem('cards');
+                    if (savedCards) {
+                        const parsedCards = JSON.parse(savedCards);
+                        if (parsedCards && typeof parsedCards === 'object') {
+                            cards = {
+                                tasks: Array.isArray(parsedCards.tasks) ? parsedCards.tasks.map(cleanCardData) : [],
+                                challenges: Array.isArray(parsedCards.challenges) ? parsedCards.challenges.map(cleanCardData) : [],
+                                automations: Array.isArray(parsedCards.automations) ? parsedCards.automations.map(cleanCardData) : [],
+                                meals: Array.isArray(parsedCards.meals) ? parsedCards.meals.map(cleanCardData) : [],
+                                workouts: Array.isArray(parsedCards.workouts) ? parsedCards.workouts.map(cleanCardData) : []
+                            };
+                        }
+                    }
+                    const savedSettings = localStorage.getItem('settings');
+                    if (savedSettings) {
+                        const parsedSettings = JSON.parse(savedSettings);
+                        globalFrequencyMode = parsedSettings.frequencyMode || 'fixed';
+                        currentTheme = parsedSettings.theme || 'dark';
+                        document.body.className = `theme-${currentTheme}`;
+                    }
+                    const savedOutfits = localStorage.getItem('outfitData');
+                    if (savedOutfits) {
+                        const parsedOutfits = JSON.parse(savedOutfits);
+                        outfitData = {
+                            items: Array.isArray(parsedOutfits.items) ? parsedOutfits.items : [],
+                            outfits: Array.isArray(parsedOutfits.outfits) ? parsedOutfits.outfits : [],
+                            generatedOutfit: parsedOutfits.generatedOutfit || null
+                        };
+                    }
+                    updateDisplay();
+                    updateOutfitDisplay();
+                } catch (e) {
+                    console.error('Error loading data from localStorage:', e);
+                    cards = { tasks: [], challenges: [], automations: [], meals: [], workouts: [] };
+                    outfitData = { items: [], outfits: [], generatedOutfit: null };
+                    updateDisplay();
+                    updateOutfitDisplay();
+                }
+            }
+
+            // Save data
+            function saveData() {
+                try {
+                    const cleanedCards = {
+                        tasks: cards.tasks.map(cleanCardData),
+                        challenges: cards.challenges.map(cleanCardData),
+                        automations: cards.automations.map(cleanCardData),
+                        meals: cards.meals.map(cleanCardData),
+                        workouts: cards.workouts.map(cleanCardData)
+                    };
+                    localStorage.setItem('cards', JSON.stringify(cleanedCards));
+                    localStorage.setItem('settings', JSON.stringify({ 
+                        frequencyMode: globalFrequencyMode,
+                        theme: currentTheme 
+                    }));
+                    localStorage.setItem('outfitData', JSON.stringify(outfitData));
+                    updateDisplay();
+                    updateOutfitDisplay();
+                } catch (e) {
+                    if (e.name === 'QuotaExceededError') {
+                        alert('Stockage local plein. Essayez de supprimer certaines cartes ou images.');
+                    } else {
+                        console.error('Error saving data to localStorage:', e);
+                        alert('Erreur lors de la sauvegarde des données.');
+                    }
+                }
+            }
+
+            // Toggle theme
+            window.toggleTheme = function() {
+                currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.body.className = `theme-${currentTheme}`;
+                saveData();
+                updateOutfitDisplay();
+            };
+
+            // Outfit popup
+            window.openOutfitPopup = function() {
+                const popup = document.getElementById('outfit-popup');
+                if (!popup) return;
+                popup.style.display = 'flex';
+                currentSeason = getSeason(new Date());
+                document.getElementById('outfit-popup-content').style.background = seasonStyles[currentSeason].background;
+                updateOutfitCategoryOptions();
+                renderItems();
+                renderOutfitFormItems();
+                renderGeneratedOutfit();
+            };
+
+            window.closeOutfitPopup = function() {
+                const popup = document.getElementById('outfit-popup');
+                if (popup) popup.style.display = 'none';
+                resetOutfitForms();
+                updateOutfitDisplay();
+            };
+
+            window.openOutfitsPopup = function() {
+                const subPopup = document.getElementById('outfits-sub-popup');
+                if (subPopup) {
+                    subPopup.style.display = 'flex';
+                    renderOutfits();
+                }
+            };
+
+            window.closeOutfitsPopup = function() {
+                const subPopup = document.getElementById('outfits-sub-popup');
+                if (subPopup) subPopup.style.display = 'none';
+            };
+
+            function updateOutfitCategoryOptions() {
+                const defaultCategories = ['classique', 'old money', 'casual', 'streetwear'];
+                const customCategories = [...new Set(outfitData.items.map(item => item.category).filter(cat => !defaultCategories.includes(cat)))];
+                const allCategories = [...defaultCategories, ...customCategories];
+                const select = document.getElementById('outfit-category');
+                select.innerHTML = '<option value="">Toutes les catégories</option>';
+                allCategories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+                    select.appendChild(option);
+                });
+                select.value = selectedCategory;
+            }
+
+            window.updateOutfitCategory = function() {
+                selectedCategory = document.getElementById('outfit-category').value;
+            };
+
+            window.generateOutfit = function() {
+                if (isGenerating) return;
+                isGenerating = true;
+                const button = document.getElementById('generate-button');
+                button.disabled = true;
+                button.innerHTML = `<span class="spinner">${seasonStyles[currentSeason].icon}</span> Génération...`;
+                setTimeout(() => {
+                    try {
+                        const filteredOutfits = outfitData.outfits.filter(
+                            outfit => outfit.season === currentSeason && (!selectedCategory || outfit.category === selectedCategory)
+                        );
+                        if (filteredOutfits.length === 0) {
+                            outfitData.generatedOutfit = null;
+                            renderGeneratedOutfit();
+                            isGenerating = false;
+                            button.disabled = false;
+                            button.innerHTML = 'Générer';
+                            return;
+                        }
+                        const randomOutfit = filteredOutfits[Math.floor(Math.random() * filteredOutfits.length)];
+                        outfitData.generatedOutfit = randomOutfit;
+                        renderGeneratedOutfit();
+                        saveData();
+                        isGenerating = false;
+                        button.disabled = false;
+                        button.innerHTML = 'Générer';
+                    } catch (e) {
+                        console.error('Error generating outfit:', e);
+                        isGenerating = false;
+                        button.disabled = false;
+                        button.innerHTML = 'Générer';
+                    }
+                }, 1500);
+            };
+
+            function renderGeneratedOutfit() {
+                const container = document.getElementById('generated-outfit');
+                container.innerHTML = '';
+                if (!outfitData.generatedOutfit) {
+                    if (!isGenerating) {
+                        container.innerHTML = `<p style="color: var(--text-secondary);">Aucun outfit disponible pour cette saison/catégorie. Ajoutez des outfits ci-dessous.</p>`;
+                    }
+                    return;
+                }
+                const outfit = outfitData.generatedOutfit;
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <h3 style="color: ${seasonStyles[currentSeason].text}; text-shadow: 0 0 5px var(--shadow-primary);">${outfit.name} (${outfit.category})</h3>
+                    <div class="outfit-grid">
+                        ${outfit.items.map(item => `
+                            <div class="outfit-item">
+                                <img src="${item.image || 'https://via.placeholder.com/60'}" alt="${item.name}">
+                                <p>${item.name}</p>
+                                <p>${item.category}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(div);
+            }
+
+            window.handleItemSubmit = function() {
+                const name = document.getElementById('item-name').value;
+                const category = document.getElementById('item-category').value;
+                const season = document.getElementById('item-season').value;
+                const imageFile = document.getElementById('item-image').files[0];
+
+                if (!name || !category || !season) {
+                    alert('Veuillez remplir tous les champs.');
+                    return;
+                }
+
+                if (imageFile) {
+                    compressImage(imageFile, function(compressedImage) {
+                        if (compressedImage) {
+                            saveItem({ name, category, season, image: compressedImage });
+                        } else {
+                            alert('Erreur lors de la compression de l’image');
+                        }
+                    });
+                } else {
+                    const existingImage = editItemIndex !== null ? outfitData.items[editItemIndex]?.image : '';
+                    saveItem({ name, category, season, image: existingImage });
+                }
+            };
+
+            function saveItem(item) {
+                if (editItemIndex !== null) {
+                    outfitData.items[editItemIndex] = item;
+                    editItemIndex = null;
+                    document.getElementById('item-submit').textContent = 'Ajouter Item';
+                } else {
+                    outfitData.items.push(item);
+                }
+                saveData();
+                resetItemForm();
+                renderItems();
+            }
+
+            function resetItemForm() {
+                itemForm = { name: '', category: '', season: 'all', image: '' };
+                document.getElementById('item-name').value = '';
+                document.getElementById('item-category').value = 'haut';
+                document.getElementById('item-season').value = 'all';
+                document.getElementById('item-image').value = '';
+                document.getElementById('item-image-preview').innerHTML = '';
+            }
+
+            function renderItems() {
+                const grid = document.getElementById('items-grid');
+                grid.innerHTML = '';
+                outfitData.items.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'item-card';
+                    div.draggable = true;
+                    div.ondragstart = (e) => {
+                        e.dataTransfer.setData('item', JSON.stringify(item));
+                    };
+                    div.innerHTML = `
+                        <img src="${item.image || 'https://via.placeholder.com/60'}" alt="${item.name}">
+                        <p>${item.name}</p>
+                        <p>${item.category} - ${item.season}</p>
+                        <button class="save-button" onclick="editItem(${index})">Modifier</button>
+                        <button class="cancel-button" onclick="deleteItem(${index})">Supprimer</button>
+                    `;
+                    grid.appendChild(div);
+                });
+            }
+
+            window.editItem = function(index) {
+                editItemIndex = index;
+                const item = outfitData.items[index];
+                document.getElementById('item-name').value = item.name;
+                document.getElementById('item-category').value = item.category;
+                document.getElementById('item-season').value = item.season;
+                document.getElementById('item-image-preview').innerHTML = item.image ? `<img src="${item.image}" style="max-width: 100px; border-radius: 8px;">` : '';
+                document.getElementById('item-submit').textContent = 'Modifier Item';
+            };
+
+            window.deleteItem = function(index) {
+                outfitData.items = outfitData.items.filter((_, i) => i !== index);
+                saveData();
+                renderItems();
+            };
+
+            window.handleOutfitSubmit = function() {
+                const name = document.getElementById('outfit-name').value;
+                const category = document.getElementById('outfit-form-category').value;
+                const season = document.getElementById('outfit-season').value;
+                const newCategory = document.getElementById('new-category').value;
+
+                if (!name || (!category && !newCategory) || !season) {
+                    alert('Veuillez remplir tous les champs.');
+                    return;
+                }
+
+                const hasTop = outfitForm.items.some(item => item.category === 'haut');
+                const hasBottom = outfitForm.items.some(item => item.category === 'bas');
+                if (!hasTop || !hasBottom) {
+                    alert('Un outfit doit inclure au moins un haut et un bas.');
+                    return;
+                }
+
+                const finalCategory = newCategory || category;
+                const outfit = { name, category: finalCategory, season, items: outfitForm.items };
+
+                if (editOutfitIndex !== null) {
+                    outfitData.outfits[editOutfitIndex] = outfit;
+                    editOutfitIndex = null;
+                    document.getElementById('outfit-submit').textContent = 'Créer Outfit';
+                } else {
+                    outfitData.outfits.push(outfit);
+                }
+                saveData();
+                resetOutfitForm();
+                renderOutfitFormItems();
+            };
+
+            function resetOutfitForm() {
+                outfitForm = { name: '', category: 'classique', season: 'all', items: [] };
+                document.getElementById('outfit-name').value = '';
+                document.getElementById('outfit-form-category').value = 'classique';
+                document.getElementById('outfit-season').value = 'all';
+                document.getElementById('new-category').value = '';
+            };
+
+            function resetOutfitForms() {
+                resetItemForm();
+                resetOutfitForm();
+                editItemIndex = null;
+                editOutfitIndex = null;
+                renderItems();
+                renderOutfitFormItems();
+            }
+
+            function renderOutfitFormItems() {
+                const grid = document.getElementById('outfit-items-grid');
+                grid.innerHTML = '';
+                outfitForm.items.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'outfit-item';
+                    div.innerHTML = `
+                        <img src="${item.image || 'https://via.placeholder.com/60'}" alt="${item.name}">
+                        <p>${item.name}</p>
+                        <p>${item.category}</p>
+                    `;
+                    grid.appendChild(div);
+                });
+            }
+
+            function renderOutfits() {
+                const grid = document.getElementById('outfits-grid');
+                grid.innerHTML = '';
+                outfitData.outfits.forEach((outfit, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'outfit-item';
+                    div.innerHTML = `
+                        <h3 style="color: ${seasonStyles[currentSeason].text}">${outfit.name} (${outfit.category})</h3>
+                        <p style="color: var(--text-secondary);">Saison: ${outfit.season}</p>
+                        <div class="outfit-grid">
+                            ${outfit.items.map(item => `
+                                <div class="outfit-item">
+                                    <img src="${item.image || 'https://via.placeholder.com/60'}" alt="${item.name}">
+                                    <p>${item.name}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button class="save-button" onclick="editOutfit(${index})">Modifier</button>
+                        <button class="cancel-button" onclick="deleteOutfit(${index})">Supprimer</button>
+                    `;
+                    grid.appendChild(div);
+                });
+                if (outfitData.outfits.length === 0) {
+                    grid.innerHTML = `<p style="color: var(--text-secondary);">Aucun outfit enregistré.</p>`;
+                }
+            }
+
+            window.editOutfit = function(index) {
+                editOutfitIndex = index;
+                outfitForm = { ...outfitData.outfits[index] };
+                document.getElementById('outfit-name').value = outfitForm.name;
+                document.getElementById('outfit-form-category').value = outfitForm.category;
+                document.getElementById('outfit-season').value = outfitForm.season;
+                document.getElementById('outfit-submit').textContent = 'Modifier Outfit';
+                renderOutfitFormItems();
+                closeOutfitsPopup();
+            };
+
+            window.deleteOutfit = function(index) {
+                outfitData.outfits = outfitData.outfits.filter((_, i) => i !== index);
+                saveData();
+                renderOutfits();
+            };
+
+            // Drag-and-drop pour l'image d'item
+            const itemDropZone = document.getElementById('item-image-drop');
+            itemDropZone.ondragover = (e) => {
+                e.preventDefault();
+                itemDropZone.classList.add('dragover');
+            };
+            itemDropZone.ondragleave = () => {
+                itemDropZone.classList.remove('dragover');
+            };
+            itemDropZone.ondrop = (e) => {
+                e.preventDefault();
+                itemDropZone.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    compressImage(file, (compressedImage) => {
+                        if (compressedImage) {
+                            itemForm.image = compressedImage;
+                            document.getElementById('item-image-preview').innerHTML = `<img src="${compressedImage}" style="max-width: 100px; border-radius: 8px;">`;
+                        }
+                    });
+                }
+            };
+            document.getElementById('item-image').onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    compressImage(file, (compressedImage) => {
+                        if (compressedImage) {
+                            itemForm.image = compressedImage;
+                            document.getElementById('item-image-preview').innerHTML = `<img src="${compressedImage}" style="max-width: 100px; border-radius: 8px;">`;
+                        }
+                    });
+                }
+            };
+
+            // Drag-and-drop pour l'outfit
+            const outfitDropZone = document.getElementById('outfit-drop');
+            outfitDropZone.ondragover = (e) => {
+                e.preventDefault();
+                outfitDropZone.classList.add('dragover');
+            };
+            outfitDropZone.ondragleave = () => {
+                outfitDropZone.classList.remove('dragover');
+            };
+            outfitDropZone.ondrop = (e) => {
+                e.preventDefault();
+                outfitDropZone.classList.remove('dragover');
+                const item = JSON.parse(e.dataTransfer.getData('item'));
+                outfitForm.items.push(item);
+                renderOutfitFormItems();
+            };
+
+            // Open add/edit popup
+            window.openAddPopup = function(section, cardId = null) {
+                const popup = document.getElementById('add-popup');
+                if (!popup) {
+                    console.error('Add popup not found');
+                    return;
+                }
+                currentSection = section;
+                currentCardId = cardId;
+                popup.style.display = 'flex';
+
+                const titleInput = document.getElementById('card-title');
+                const descInput = document.getElementById('card-description');
+                const imageInput = document.getElementById('card-image');
+                const preview = document.getElementById('image-preview');
+                const modeFixed = document.querySelector('input[name="frequency-mode"][value="fixed"]');
+                const modeRandom = document.querySelector('input[name="frequency-mode"][value="random"]');
+                const unitSelect = document.getElementById('frequency-unit');
+                const valueInput = document.getElementById('frequency-value');
+                const valueMaxInput = document.getElementById('frequency-value-max');
+                const startDateInput = document.getElementById('card-start-date');
+                const startTime = document.getElementById('card-start-time');
+                const endTime = document.getElementById('card-end-time');
+                const deleteBtn = document.getElementById('delete-button');
+
+                if (!(titleInput && descInput && imageInput && preview && modeFixed && modeRandom && unitSelect && valueInput && valueMaxInput && startDateInput && startTime && endTime && deleteBtn)) {
+                    console.error('Popup elements missing');
+                    return;
+                }
+
+                titleInput.value = '';
+                descInput.value = '';
+                imageInput.value = '';
+                preview.innerHTML = '';
+                modeFixed.checked = globalFrequencyMode === 'fixed';
+                modeRandom.checked = globalFrequencyMode === 'random';
+                unitSelect.value = 'day';
+                valueInput.value = '';
+                valueMaxInput.value = '';
+                valueMaxInput.style.display = globalFrequencyMode === 'random' ? 'block' : 'none';
+                startDateInput.value = '';
+                startTime.value = '';
+                endTime.value = '';
+                deleteBtn.style.display = cardId ? 'inline' : 'none';
+
+                if (cardId && cards[section]) {
+                    const card = cards[section].find(c => c.id === cardId);
+                    if (card) {
+                        titleInput.value = card.title || '';
+                        descInput.value = card.description || '';
+                        unitSelect.value = card.frequency.unit || 'day';
+                        valueInput.value = card.frequency.value || '';
+                        valueMaxInput.value = card.frequency.valueMax || '';
+                        startDateInput.value = card.startDate || '';
+                        startTime.value = card.startTime || '';
+                        endTime.value = card.endTime || '';
+                        if (card.image) {
+                            preview.innerHTML = `<img src="${card.image}" style="width: 100%; border-radius: 10px;">`;
+                        }
+                    }
+                }
+
+                modeFixed.addEventListener('change', () => {
+                    globalFrequencyMode = 'fixed';
+                    valueMaxInput.style.display = 'none';
+                });
+                modeRandom.addEventListener('change', () => {
+                    globalFrequencyMode = 'random';
+                    valueMaxInput.style.display = 'block';
+                });
+            };
+
+            // Close add popup
+            window.closeAddPopup = function() {
+                const popup = document.getElementById('add-popup');
+                if (popup) {
+                    popup.style.display = 'none';
+                }
+            };
+
+            // Save a card
+            window.saveCard = function() {
+                const titleInput = document.getElementById('card-title');
+                const descInput = document.getElementById('card-description');
+                const imageInput = document.getElementById('card-image');
+                const modeFixed = document.querySelector('input[name="frequency-mode"][value="fixed"]');
+                const unitSelect = document.getElementById('frequency-unit');
+                const valueInput = document.getElementById('frequency-value');
+                const valueMaxInput = document.getElementById('frequency-value-max');
+                const startDateInput = document.getElementById('card-start-date');
+                const startTime = document.getElementById('card-start-time');
+                const endTime = document.getElementById('card-end-time');
+
+                if (!(titleInput && descInput && imageInput && modeFixed && unitSelect && valueInput && valueMaxInput && startDateInput && startTime && endTime)) {
+                    console.error('Form elements missing');
+                    return;
+                }
+
+                const title = titleInput.value;
+                const description = descInput.value;
+                const frequency = {
+                    mode: modeFixed.checked ? 'fixed' : 'random',
+                    unit: unitSelect.value,
+                    value: parseInt(valueInput.value) || 1,
+                    valueMax: modeFixed.checked ? null : (parseInt(valueMaxInput.value) || parseInt(valueInput.value) || 1)
+                };
+                const startDate = startDateInput.value;
+                const startTimeValue = startTime.value;
+                const endTimeValue = endTime.value;
+                const imageFile = imageInput.files[0];
+
+                if (!title) {
+                    alert('Veuillez entrer un titre');
+                    return;
+                }
+                if (!valueInput.value) {
+                    alert('Veuillez entrer une valeur de fréquence');
+                    return;
+                }
+                if (frequency.mode === 'random' && (!valueMaxInput.value || parseInt(valueMaxInput.value) < parseInt(valueInput.value))) {
+                    alert('La valeur maximale doit être supérieure ou égale à la valeur minimale pour le mode aléatoire');
+                    return;
+                }
+
+                if (imageFile) {
+                    compressImage(imageFile, function(compressedImage) {
+                        if (compressedImage) {
+                            saveCardData(title, description, frequency, startDate, startTimeValue, endTimeValue, compressedImage);
+                        } else {
+                            alert('Erreur lors de la compression de l’image');
+                        }
+                    });
+                } else {
+                    const existingCard = currentCardId && cards[currentSection] ? 
+                        cards[currentSection].find(c => c.id === currentCardId) : null;
+                    const image = existingCard ? existingCard.image : '';
+                    saveCardData(title, description, frequency, startDate, startTimeValue, endTimeValue, image);
+                }
+            };
+
+            function saveCardData(title, description, frequency, startDate, startTime, endTime, image) {
+                if (!cards[currentSection]) {
+                    console.error('Invalid section:', currentSection);
+                    return;
+                }
+
+                const card = {
+                    id: currentCardId || Date.now().toString(),
+                    title,
+                    description,
+                    image,
+                    frequency,
+                    startDate,
+                    startTime,
+                    endTime,
+                    completed: false,
+                    lastCompleted: null
+                };
+
+                if (currentCardId) {
+                    const index = cards[currentSection].findIndex(c => c.id === currentCardId);
+                    if (index !== -1) {
+                        cards[currentSection][index] = card;
+                    }
+                } else {
+                    cards[currentSection].push(card);
+                }
+
+                saveData();
+                closeAddPopup();
+            }
+
+            // Delete a card
+            window.deleteCard = function() {
+                if (currentCardId && cards[currentSection]) {
+                    cards[currentSection] = cards[currentSection].filter(c => c.id !== currentCardId);
+                    saveData();
+                    closeAddPopup();
+                }
+            };
+
+            // Show card details
+            window.openViewPopup = function(section, cardId) {
+                if (!cards[section]) {
+                    console.error('Invalid section:', section);
+                    return;
+                }
+                const card = cards[section].find(c => c.id === cardId);
+                if (!card) {
+                    console.error('Card not found:', cardId);
+                    return;
+                }
+
+                const viewPopup = document.getElementById('view-popup');
+                const viewTitle = document.getElementById('view-title');
+                const viewDesc = document.getElementById('view-description');
+                const viewStartDate = document.getElementById('view-start-date');
+                const viewImage = document.getElementById('view-image');
+
+                if (!(viewPopup && viewTitle && viewDesc && viewStartDate && viewImage)) {
+                    console.error('View popup elements missing');
+                    return;
+                }
+
+                viewTitle.textContent = card.title;
+                viewDesc.textContent = card.description;
+                viewStartDate.textContent = card.startDate ? `Date de début: ${card.startDate}` : 'Aucune date de début';
+                viewImage.src = card.image || 'https://via.placeholder.com/150';
+                viewPopup.style.display = 'flex';
+                currentSection = section;
+                currentCardId = cardId;
+            };
+
+            // Close view popup
+            window.closeViewPopup = function() {
+                const popup = document.getElementById('view-popup');
+                if (popup) {
+                    popup.style.display = 'none';
+                }
+            };
+
+            // Toggle card completion
+            window.toggleComplete = function() {
+                if (!cards[currentSection] || !currentCardId) {
+                    console.error('Invalid section or card ID');
+                    return;
+                }
+                const card = cards[currentSection].find(c => c.id === currentCardId);
+                if (card) {
+                    card.completed = !card.completed;
+                    card.lastCompleted = card.completed ? new Date().toISOString() : null;
+                    saveData();
+                    closeViewPopup();
+                }
+            };
+
+            // Check if a card should be displayed
+            function shouldDisplayCard(card) {
+                const now = new Date();
+                const currentHour = now.getHours();
+                const currentMinutes = now.getMinutes();
+                const currentTime = currentHour * 60 + currentMinutes;
+
+                // Vérifier la date de début
+                if (card.startDate) {
+                    const startDate = new Date(card.startDate);
+                    if (now < startDate) {
+                        return false;
+                    }
+                }
+
+                // Vérifier la plage horaire
+                if (card.startTime && card.endTime) {
+                    const [startHour, startMinute] = card.startTime.split(':').map(Number);
+                    const [endHour, endMinute] = card.endTime.split(':').map(Number);
+                    const startTime = startHour * 60 + startMinute;
+                    const endTime = endHour * 60 + endMinute;
+                    if (currentTime < startTime || currentTime > endTime) {
+                        return false;
+                    }
+                }
+
+                const lastCompleted = card.lastCompleted ? new Date(card.lastCompleted) : new Date(0);
+                const daysSinceLast = Math.floor((now - lastCompleted) / (1000 * 60 * 60 * 24));
+
+                let frequencyDays;
+                const { mode, unit, value, valueMax } = card.frequency;
+
+                switch (unit) {
+                    case 'day':
+                        frequencyDays = value;
+                        break;
+                    case 'week':
+                        frequencyDays = value * 7;
+                        break;
+                    case 'month':
+                        frequencyDays = value * 30;
+                        break;
+                    case 'year':
+                        frequencyDays = value * 365;
+                        break;
+                    default:
+                        frequencyDays = value;
+                }
+
+                if (mode === 'random' && valueMax) {
+                    let maxDays;
+                    switch (unit) {
+                        case 'day':
+                            maxDays = valueMax;
+                            break;
+                        case 'week':
+                            maxDays = valueMax * 7;
+                            break;
+                        case 'month':
+                            maxDays = valueMax * 30;
+                            break;
+                        case 'year':
+                            maxDays = valueMax * 365;
+                            break;
+                        default:
+                            maxDays = valueMax;
+                    }
+                    if (daysSinceLast >= frequencyDays) {
+                        frequencyDays = Math.floor(Math.random() * (maxDays - frequencyDays + 1)) + frequencyDays;
+                        return daysSinceLast >= frequencyDays;
+                    }
+                    return false;
+                }
+
+                return daysSinceLast >= frequencyDays;
+            }
+
+            // Update card display
+            function updateDisplay() {
+                ['tasks', 'challenges', 'automations', 'meals', 'workouts'].forEach(section => {
+                    const grid = document.getElementById(`${section}-grid`);
+                    if (!grid) {
+                        console.error(`Grid not found for section: ${section}`);
+                        return;
+                    }
+                    grid.innerHTML = '';
+                    if (!cards[section]) {
+                        cards[section] = [];
+                    }
+                    cards[section].forEach((card, index) => {
+                        if (shouldDisplayCard(card)) {
+                            const cardElement = document.createElement('div');
+                            cardElement.className = `card ${card.completed ? 'completed' : ''}`;
+                            cardElement.style.setProperty('--index', index);
+                            cardElement.innerHTML = `
+                                <img src="${card.image || 'https://via.placeholder.com/150'}" alt="${card.title}">
+                                <h3>${card.title}</h3>
+                            `;
+                            cardElement.onclick = () => openViewPopup(section, card.id);
+                            grid.appendChild(cardElement);
+                        }
+                    });
+                });
+            }
+
+            // Update outfit display
+            function updateOutfitDisplay() {
+                const content = document.getElementById('outfit-content');
+                if (!content) return;
+                if (!outfitData.generatedOutfit) {
+                    content.innerHTML = `<p style="color: var(--text-secondary);">Aucune tenue générée. Cliquez sur "Gérer les Tenues" pour en créer une.</p>`;
+                    return;
+                }
+                const outfit = outfitData.generatedOutfit;
+                content.innerHTML = `
+                    <h3 style="color: ${seasonStyles[currentSeason].text}; text-shadow: 0 0 5px var(--shadow-primary);">${outfit.name} (${outfit.category})</h3>
+                    <div class="outfit-grid">
+                        ${outfit.items.map(item => `
+                            <div class="outfit-item">
+                                <img src="${item.image || 'https://via.placeholder.com/60'}" alt="${item.name}">
+                                <p>${item.name}</p>
+                                <p>${item.category}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Load data on startup
+            loadData();
+
+            // Update display every minute
+            setInterval(() => {
+                try {
+                    updateDisplay();
+                    const newSeason = getSeason(new Date());
+                    if (newSeason !== currentSeason) {
+                        currentSeason = newSeason;
+                        updateOutfitDisplay();
+                    }
+                } catch (e) {
+                    console.error('Error updating display:', e);
+                }
+            }, 60000);
+        });
+    </script>
+</body>
+</html>
